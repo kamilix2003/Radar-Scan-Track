@@ -7,7 +7,7 @@ namespace RadarSystem
 {
     abstract class RadarState
     {
-        public abstract void UpdateBeam(RadarBeam beam, Target.TargetData target);
+        public abstract void UpdateBeam(RadarBeam beam, Targets.TargetData target);
         public virtual RadarState NextState()
         {
             return new ScanState();
@@ -16,7 +16,7 @@ namespace RadarSystem
 
     class TrackState : RadarState
     {
-        public override void UpdateBeam(RadarBeam beam, Target.TargetData target)
+        public override void UpdateBeam(RadarBeam beam, Targets.TargetData target)
         {
             throw new NotImplementedException();
         }
@@ -24,7 +24,7 @@ namespace RadarSystem
 
     class LostTrackState : RadarState
     {
-        public override void UpdateBeam(RadarBeam beam, Target.TargetData target)
+        public override void UpdateBeam(RadarBeam beam, Targets.TargetData target)
         {
             throw new NotImplementedException();
         }
@@ -44,7 +44,7 @@ namespace RadarSystem
             this.strategy = strategy;
         }
 
-        public override void UpdateBeam(RadarBeam beam, Target.TargetData target)
+        public override void UpdateBeam(RadarBeam beam, Targets.TargetData target)
         {
             strategy.NextBeamDirection(beam);
         }

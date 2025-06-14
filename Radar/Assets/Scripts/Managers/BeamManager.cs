@@ -1,24 +1,63 @@
+
+
+using RadarSystem;
 using UnityEngine;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-public class ConeGenerator : MonoBehaviour
+class BeamManager : MonoBehaviour
 {
-    [Header("Cone Settings")]
-    public float height = 2f;
-    public float beamWidth = 15f;
-    public int segments = 20;
 
-    private void Start()
+    public int beamSegments = 20;
+
+    [SerializeField] GameObject radarObject;
+
+    public GameObject beamObject;
+
+    public void Start()
     {
-        //GetComponent<MeshFilter>().mesh = GenerateCone(height, beamWidth, segments);
+
+        beamObject = CreateBeam(radarObject, new WideBeam());
     }
 
-    Mesh GenerateBeamMesh(float height, float beamWidth, int segments)
+    private GameObject CreateBeam(GameObject radarObject, RadarBeam beam)
+    {
+        GameObject beamObject = new GameObject("Beam");
+
+        beamObject.transform.SetParent(radarObject.transform);
+        beamObject.transform.localPosition = Vector3.zero;
+        beamObject.transform.localRotation = Quaternion.identity;
+
+        MeshFilter meshFilter = beamObject.AddComponent<MeshFilter>();
+        MeshRenderer meshRenderer = beamObject.AddComponent<MeshRenderer>();
+        MeshCollider meshCollider = beamObject.AddComponent<MeshCollider>();
+
+        meshRenderer.material = new Material(Shader.Find("Standard"));
+        meshRenderer.material.color = Color.green;
+
+        meshCollider.convex = true;
+        meshCollider.isTrigger = true;
+
+        UpdateBeam(beamObject, beam);
+
+        return beamObject;
+    }
+
+    public void UpdateBeam(GameObject beamObject, RadarBeam beam)
+    {
+        Mesh beamMesh = GenerateBeamMesh(beam, beamSegments);
+        beamObject.GetComponent<MeshFilter>().mesh = beamMesh;
+        beamObject.GetComponent<MeshCollider>().sharedMesh = beamMesh;
+
+        beamObject.transform.localRotation = Quaternion.Euler(beam.beamDirection.y, beam.beamDirection.x, 0);
+    }
+
+    private Mesh GenerateBeamMesh(RadarBeam beam, int segments)
     {
         Mesh mesh = new Mesh();
         mesh.name = "Procedural Cone";
 
-        float radius = Mathf.Tan(beamWidth * Mathf.Deg2Rad) * height;
+        float halfBeamWidth = beam.beamWidth / 2;
+        float height = beam.beamRange;
+        float radius = Mathf.Tan(halfBeamWidth * Mathf.Deg2Rad) * height;
 
         // Vertices
         Vector3[] vertices = new Vector3[segments + 2];
