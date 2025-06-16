@@ -1,28 +1,34 @@
 using RadarSystem;
+using Targets;
 using UnityEngine;
 
-public class RadarScript : MonoBehaviour
+class RadarScript : MonoBehaviour
 {
-
-    public Radar radar = new Radar();
-
-    [SerializeField] float updateRate = 0.25f;
-
+    Radar radar = new Radar();
+    [SerializeField] float radarUpdateInterval = 0.1f;
+    [SerializeField] float beamUpdateInterval = 0.5f;
     [SerializeField] BeamManager beamManager;
+    public TargetData targetData;
 
     void Start()
     {
-        InvokeRepeating("UpdateRadar", 0f, updateRate);
+        InvokeRepeating("UpdateRadar", 0f, radarUpdateInterval);
+        InvokeRepeating("UpdateBeam", 0f, radarUpdateInterval);
     }
-
-    private void Update()
-    {
-
-    }
-
     void UpdateRadar()
     {
-        Vector2 beamDir = radar.GetBeamDirection();
+        if (targetData != null && (Time.time - targetData.timeStamp) > radarUpdateInterval)
+        {
+            targetData = null;
+        }
+        radar.Process(targetData);
+
+        CancelInvoke("UpdateRadar");
+        InvokeRepeating("UpdateRadar", radarUpdateInterval, radarUpdateInterval);
+    }
+    void UpdateBeam()
+    {
+        Vector2 beamDir = radar.beam.beamDirection;
         //Debug.Log($"Beam direction: {beamDir}");
 
         if (beamManager == null)
@@ -31,13 +37,10 @@ public class RadarScript : MonoBehaviour
             return;
         }
 
-        beamManager.UpdateBeam(beamManager.beamObject, radar.beam);
+        beamManager.UpdateBeam(radar.beam);
+        beamManager.DetectionState(radar.state);
 
-
-        radar.Process();
-
-        CancelInvoke("UpdateRadar");
-        InvokeRepeating("UpdateRadar", updateRate, updateRate);
+        CancelInvoke("UpdateBeam");
+        InvokeRepeating("UpdateBeam", beamUpdateInterval, beamUpdateInterval);
     }
-
 }

@@ -1,15 +1,16 @@
 using System;
 using NUnit.Framework;
+using Targets;
 using Unity.VisualScripting;
 using UnityEngine;
 
 namespace RadarSystem
 { 
-    public class Radar 
+    class Radar 
     {
         public RadarBeam beam { get; private set; }
 
-        private RadarState state;
+        public RadarState state { get; private set; }
 
         //private List<TargetSample> targetHistory;
 
@@ -20,16 +21,10 @@ namespace RadarSystem
         }
 
 
-        public Vector3 Process()
+        public Vector3 Process(TargetData targetData)
         {
-            state.UpdateBeam(beam, null);
-            state = state.NextState();
+            state = state.UpdateBeam(beam, targetData);
             return Vector3.zero;
-        }
-
-        public Vector2 GetBeamDirection()
-        {
-            return beam.beamDirection;
         }
 
     }

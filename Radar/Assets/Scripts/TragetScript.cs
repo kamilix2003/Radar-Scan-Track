@@ -4,55 +4,39 @@ using UnityEngine.InputSystem;
 
 public class TragetScript : MonoBehaviour
 {
+    [SerializeField] float moveFactor = 10f;
+    [SerializeField] float altitudeFactor = 5f;
 
-    Rigidbody targetBody;
+    [SerializeField] RadarScript radarScript;
 
     private void Start()
     {
-        targetBody = GetComponent<Rigidbody>();
-        if (targetBody == null)
-        {
-            Debug.LogError("Rigidbody component is missing on the target object.");
-        }
+        radarScript = GameObject.FindFirstObjectByType<RadarScript>();
     }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        //Debug.Log("Target enter");
-    }
-
     private void OnTriggerStay(Collider other)
     {
-        //Debug.Log("Target stay");
+        Debug.Log("Target stay");
+        TargetData targetData = new TargetData(gameObject);
+        radarScript.targetData = targetData;
     }
-
-    private void OnTriggerExit(Collider other)
-    {
-        //Debug.Log("Target exit");
-    }
-
     public void onMove(InputAction.CallbackContext context)
     {
-        Debug.Log("onMove called");
-        if (context.performed || true)
+        Vector2 moveInput = context.ReadValue<Vector2>();
+        transform.position += new Vector3(moveInput.x, 0, moveInput.y).normalized * moveFactor * Time.deltaTime;
+        if (context.performed)
         {
-            Vector2 moveInput = context.ReadValue<Vector2>();
-            //transform.Translate(moveInput.x, 0, moveInput.y); // Move the object based on input
-            targetBody.linearVelocity = new Vector3(moveInput.x, 0, moveInput.y) * 5f; // Adjust speed as needed
             Debug.Log($"Move input: {moveInput}");
-            // Handle movement logic here
         }
         
     }   
 
     public void OnAltitude(InputAction.CallbackContext context)
     {
-        Debug.Log("OnAltitude called");
+        float altitudeInput = context.ReadValue<float>();
+        transform.position += new Vector3(0, altitudeInput) * altitudeFactor * Time.deltaTime;
         if (context.performed)
         {
-            float altitudeInput = context.ReadValue<float>();
             Debug.Log($"Altitude input: {altitudeInput}");
-            // Handle altitude logic here
         }
     }
 

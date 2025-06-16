@@ -1126,26 +1126,37 @@
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "",
-                    "id": "ad701e98-2fd9-4350-a245-5c9344ee866a",
+                    "name": "1D Axis",
+                    "id": "0690ded9-96e6-428a-b533-a7486c42caf3",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Altitude",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "c1a17595-2875-44e0-88bd-add92a16864b",
                     "path": "<Gamepad>/leftTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Altitude",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
                 },
                 {
-                    "name": "",
-                    "id": "d89ef83a-5048-4f6f-9e9b-e8c747ba6cf7",
+                    "name": "positive",
+                    "id": "d0991da8-7604-411b-b2f5-a949b2a5b667",
                     "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Altitude",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
                 }
             ]
         }

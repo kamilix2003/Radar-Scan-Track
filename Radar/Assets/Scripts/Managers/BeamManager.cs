@@ -2,6 +2,7 @@
 
 using RadarSystem;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 class BeamManager : MonoBehaviour
 {
@@ -11,13 +12,17 @@ class BeamManager : MonoBehaviour
     [SerializeField] GameObject radarObject;
 
     public GameObject beamObject;
+    private RadarBeam localRadarBeam;
 
     public void Start()
     {
-
         beamObject = CreateBeam(radarObject, new WideBeam());
     }
 
+    public void DetectionState(RadarState state)
+    {
+        beamObject.GetComponent<MeshRenderer>().material.color = state.GetColor();
+    }
     private GameObject CreateBeam(GameObject radarObject, RadarBeam beam)
     {
         GameObject beamObject = new GameObject("Beam");
@@ -30,26 +35,43 @@ class BeamManager : MonoBehaviour
         MeshRenderer meshRenderer = beamObject.AddComponent<MeshRenderer>();
         MeshCollider meshCollider = beamObject.AddComponent<MeshCollider>();
 
-        meshRenderer.material = new Material(Shader.Find("Standard"));
-        meshRenderer.material.color = Color.green;
+        meshRenderer.material = GenerateBeamMaterial();
 
         meshCollider.convex = true;
         meshCollider.isTrigger = true;
 
-        UpdateBeam(beamObject, beam);
+        localRadarBeam = beam;
 
         return beamObject;
     }
-
-    public void UpdateBeam(GameObject beamObject, RadarBeam beam)
+    public void UpdateBeam(RadarBeam beam)
     {
-        Mesh beamMesh = GenerateBeamMesh(beam, beamSegments);
-        beamObject.GetComponent<MeshFilter>().mesh = beamMesh;
-        beamObject.GetComponent<MeshCollider>().sharedMesh = beamMesh;
+        if ( beam != localRadarBeam)
+        {
+            localRadarBeam = beam;
+            Mesh beamMesh = GenerateBeamMesh(beam, beamSegments);
+            beamObject.GetComponent<MeshFilter>().mesh = beamMesh;
+            beamObject.GetComponent<MeshCollider>().sharedMesh = beamMesh;
+        }
 
         beamObject.transform.localRotation = Quaternion.Euler(beam.beamDirection.y, beam.beamDirection.x, 0);
     }
+    private Material GenerateBeamMaterial()
+    {
+        // Create a new URP/Lit material
+        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
 
+        // Surface Type: Transparent
+        mat.SetFloat("_Surface", 1f); // 1 = Transparent
+        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        mat.renderQueue = (int)RenderQueue.Transparent;
+
+        // Emission ON with default color
+        //mat.SetColor("_EmissionColor", Color.white * 1f); // Adjust intensity
+        //mat.EnableKeyword("_EMISSION");
+
+        return mat;
+    }
     private Mesh GenerateBeamMesh(RadarBeam beam, int segments)
     {
         Mesh mesh = new Mesh();

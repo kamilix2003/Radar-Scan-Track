@@ -7,26 +7,48 @@ namespace RadarSystem
 {
     abstract class RadarState
     {
-        public abstract void UpdateBeam(RadarBeam beam, Targets.TargetData target);
-        public virtual RadarState NextState()
+        public virtual RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
         {
-            return new ScanState();
+            return this;
+        }
+
+        public virtual Color GetColor()
+        {
+            return Color.white; // Default color for the radar state
         }
     }
 
     class TrackState : RadarState
     {
-        public override void UpdateBeam(RadarBeam beam, Targets.TargetData target)
+        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
         {
-            throw new NotImplementedException();
+            if (target == null)
+            {
+                return new LostTrackState(); // Transition to lost track state if no target
+            }
+            return this;
+        }
+
+        public override Color GetColor()
+        {
+            return Color.red; // Color for the track state
         }
     }
 
     class LostTrackState : RadarState
     {
-        public override void UpdateBeam(RadarBeam beam, Targets.TargetData target)
+        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
         {
-            throw new NotImplementedException();
+            if (target == null)
+            {
+                return new ScanState(); // Transition to lost track state if no target
+            }
+            return this;
+        }
+
+        public override Color GetColor()
+        {
+            return Color.blue; // Color for the lost track state
         }
     }
 
@@ -38,20 +60,22 @@ namespace RadarSystem
         {
             strategy = new HorizontalScan();
         }
-
         public ScanState(ScanStrategy strategy)
         {
             this.strategy = strategy;
         }
-
-        public override void UpdateBeam(RadarBeam beam, Targets.TargetData target)
+        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
         {
+            if (target != null)
+            {
+                return new TrackState();
+            }
             strategy.NextBeamDirection(beam);
+            return this; // Continue scanning
         }
-
-        public override RadarState NextState()
+        public override Color GetColor()
         {
-            return this;
+            return Color.green; // Color for the scan state
         }
     }
 }

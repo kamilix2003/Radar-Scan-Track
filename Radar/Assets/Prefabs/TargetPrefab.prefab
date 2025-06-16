@@ -120,7 +120,7 @@ Rigidbody:
   m_GameObject: {fileID: 4009579477894336977}
   serializedVersion: 5
   m_Mass: 1
-  m_LinearDamping: 0.1
+  m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -150,6 +150,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed0759518deeadb44b4c994249e3d354, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveFactor: 10
+  altitudeFactor: 5
 --- !u!114 &-656556826050157884
 MonoBehaviour:
   m_ObjectHideFlags: 0
