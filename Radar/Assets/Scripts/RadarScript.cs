@@ -21,7 +21,13 @@ class RadarScript : MonoBehaviour
         {
             targetData = null;
         }
-        radar.Process(targetData);
+
+        radar.Process(targetData, radarUpdateInterval);
+        if(radar.state.trackedTarget != null)
+        {
+            Vector3 estimatedPosition = radar.state.trackedTarget.GetPosition();
+            Debug.Log($"Estimated Position: {estimatedPosition}");
+        }
 
         CancelInvoke("UpdateRadar");
         InvokeRepeating("UpdateRadar", radarUpdateInterval, radarUpdateInterval);

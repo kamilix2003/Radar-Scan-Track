@@ -9,45 +9,47 @@ namespace RadarSystem
 {
     abstract class RadarState
     {
-        public string StateName { get; protected set; }
-        public virtual RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
+        public TargetData trackedTarget { get; protected set; }
+        public string stateName { get; protected set; }
+        protected RadarState(string stateName = "BaseRadarState", TargetData trackedData = null)
+        {
+            this.stateName = stateName;
+            this.trackedTarget = trackedData;
+        }
+        public virtual RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target, float dt)
         {
             return this;
         }
-
         public virtual Color GetColor()
         {
             return Color.white; // Default color for the radar state
         }
         public override string ToString()
         {
-            return StateName;
+            return stateName;
         }
-        protected void predictTargetPosition(TargetData target, float dt = 0.1f)
+        protected void predictTargetPosition(TargetData target, float dt)
         {
             Vector3 positionDelta = new Vector3(target.velocity3D.y, target.velocity3D.x, target.velocity3D.z) * dt;
-            Vector3 newPosition = target.GetPosition() + positionDelta;
+            Vector3 noise = Mathf.PerlinNoise(Time.time, 0.0f) * 0.1f * Vector3.one; // Adding some noise for realism
+            Vector3 newPosition = target.GetPosition() + positionDelta + noise;
             target.SetPosition(newPosition);
-            //Debug.Log(target.ToString());
-            //Debug.Log($"Position delta: {positionDelta}");
         }
     }
     class TrackState : RadarState
     {
-        TargetData trackedTarget;
-        public TrackState(TargetData target)
+        public TrackState(TargetData target) : base("TrackState", target)
         {
-            trackedTarget = target;
-            StateName = "TrackState"; // Set the state name for tracking
+
         }
-        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
+        public override RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt)
         {
             if (target == null)
             {
                 return new LostTrackState(trackedTarget); // Transition to lost track state if no target
             }
             trackedTarget = target;
-            predictTargetPosition(trackedTarget);
+            predictTargetPosition(trackedTarget, dt);
             beam.beamDirection = trackedTarget.direction;
             return this;
         }
@@ -60,26 +62,24 @@ namespace RadarSystem
 
     class LostTrackState : RadarState
     {
-        TargetData lostTarget;
         const float lostTrackTimeout = 2f; // Timeout for lost track state
-        public LostTrackState(TargetData targetData)
+        public LostTrackState(TargetData targetData) : base("LostTrackState", targetData)
         {
-            StateName = "LostTrackState"; // Set the state name for lost track
-            lostTarget = targetData;
+            
         }
-        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
+        public override RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt)
         {
             if (target != null)
             {
                 return new TrackState(target); // Transition to track state if target is found
             }
-            if (Time.time - lostTarget.timeStamp > lostTrackTimeout)
+            if (Time.time - trackedTarget.timeStamp > lostTrackTimeout)
             {
                 Debug.Log("Lost track of target, transitioning to scan state.");
                 return new ScanState(); // Transition to scan state if timeout exceeded
             }
-            predictTargetPosition(lostTarget);
-            beam.beamDirection = lostTarget.direction;
+            predictTargetPosition(trackedTarget, dt);
+            beam.beamDirection = trackedTarget.direction;
             return this;
         }
 
@@ -93,22 +93,21 @@ namespace RadarSystem
     {
         private ScanStrategy strategy;
 
-        public ScanState()
+        public ScanState() : base("ScanState")
         {
             strategy = new HorizontalScan();
-            StateName = "ScanState"; // Set the state name for scanning
         }
         public ScanState(ScanStrategy strategy)
         {
             this.strategy = strategy;
-            StateName = "ScanState"; // Set the state name for scanning
+            stateName = "ScanState"; // Set the state name for scanning
         }
-        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target)
+        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target, float dt)
         {
             if (target != null)
             {
                 RadarState newState = new TrackState(target);
-                newState.UpdateBeam(beam, target); // Update the beam with the target data
+                newState.UpdateBeam(beam, target, dt); // Update the beam with the target data
                 return newState;
             }
             strategy.NextBeamDirection(beam);

@@ -21,14 +21,13 @@ namespace RadarSystem
         }
 
 
-        public Vector3 Process(TargetData targetData)
+        public void Process(TargetData targetData, float dt)
         {
             if (targetData != null)
             {
                 targetData.PopulateAngles(beam);
             }
-            state = state.UpdateBeam(beam, targetData);
-            return Vector3.zero;
+            state = state.UpdateBeam(beam, targetData, dt);
         }
 
     }
