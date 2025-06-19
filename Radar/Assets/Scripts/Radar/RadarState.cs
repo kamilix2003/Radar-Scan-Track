@@ -25,11 +25,11 @@ namespace RadarSystem
         }
         protected void predictTargetPosition(TargetData target, float dt = 0.1f)
         {
-            Vector3 positionDelta = target.velocity3D * dt;
+            Vector3 positionDelta = new Vector3(target.velocity3D.y, target.velocity3D.x, target.velocity3D.z) * dt;
             Vector3 newPosition = target.GetPosition() + positionDelta;
             target.SetPosition(newPosition);
-            Debug.Log(target.ToString());
-            Debug.Log($"Position delta: {positionDelta}");
+            //Debug.Log(target.ToString());
+            //Debug.Log($"Position delta: {positionDelta}");
         }
     }
     class TrackState : RadarState
