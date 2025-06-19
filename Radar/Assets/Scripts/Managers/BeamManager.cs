@@ -11,6 +11,10 @@ class BeamManager : MonoBehaviour
 
     [SerializeField] GameObject radarObject;
 
+    [Header("Beam Settings")]
+    [SerializeField] Material beamMaterial;
+    [SerializeField] float beamAlpha = 0.2f;
+
     public GameObject beamObject;
     private RadarBeam localRadarBeam;
 
@@ -21,7 +25,10 @@ class BeamManager : MonoBehaviour
 
     public void DetectionState(RadarState state)
     {
-        beamObject.GetComponent<MeshRenderer>().material.color = state.GetColor();
+        Color beamColor = state.GetColor();
+        beamColor.a = beamAlpha;
+        beamObject.GetComponent<MeshRenderer>().material.color = beamColor;
+        beamObject.GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", beamColor * 2f); // Emission for better visibility
     }
     private GameObject CreateBeam(GameObject radarObject, RadarBeam beam)
     {
@@ -35,7 +42,7 @@ class BeamManager : MonoBehaviour
         MeshRenderer meshRenderer = beamObject.AddComponent<MeshRenderer>();
         MeshCollider meshCollider = beamObject.AddComponent<MeshCollider>();
 
-        meshRenderer.material = GenerateBeamMaterial();
+        meshRenderer.material = beamMaterial;
 
         meshCollider.convex = true;
         meshCollider.isTrigger = true;
@@ -55,22 +62,6 @@ class BeamManager : MonoBehaviour
         }
 
         beamObject.transform.localRotation = Quaternion.Euler(beam.beamDirection.y, beam.beamDirection.x, 0);
-    }
-    private Material GenerateBeamMaterial()
-    {
-        // Create a new URP/Lit material
-        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-
-        // Surface Type: Transparent
-        mat.SetFloat("_Surface", 1f); // 1 = Transparent
-        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-        mat.renderQueue = (int)RenderQueue.Transparent;
-
-        // Emission ON with default color
-        //mat.SetColor("_EmissionColor", Color.white * 1f); // Adjust intensity
-        //mat.EnableKeyword("_EMISSION");
-
-        return mat;
     }
     private Mesh GenerateBeamMesh(RadarBeam beam, int segments)
     {

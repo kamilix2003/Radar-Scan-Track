@@ -17,7 +17,7 @@ class RadarScript : MonoBehaviour
     }
     void UpdateRadar()
     {
-        if (targetData != null && (Time.time - targetData.timeStamp) > radarUpdateInterval)
+        if (targetData != null && (Time.time - targetData.timeStamp) > radarUpdateInterval * 1f)
         {
             targetData = null;
         }

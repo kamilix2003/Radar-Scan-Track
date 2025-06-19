@@ -516,6 +516,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beamSegments: 20
   radarObject: {fileID: 1608840311}
+  beamMaterial: {fileID: 2100000, guid: 267dd30bb6c190a4f9d88aa6b011173e, type: 2}
+  beamAlpha: 0.5
   beamObject: {fileID: 0}
 --- !u!4 &1061501758
 Transform:
@@ -562,6 +564,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetPrefab: {fileID: 4009579477894336977, guid: 8b598d8cd14b3fd4dad6899bcdaafb08, type: 3}
+  targetObject: {fileID: 0}
 --- !u!4 &1595420482
 Transform:
   m_ObjectHideFlags: 0
@@ -606,7 +609,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17511b772b2dd7b4cb0f132818686c61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  updateRate: 0.25
+  radarUpdateInterval: 0.1
+  beamUpdateInterval: 0.1
   beamManager: {fileID: 1061501757}
 --- !u!4 &1608840313
 Transform:

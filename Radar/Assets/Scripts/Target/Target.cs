@@ -9,18 +9,9 @@ namespace Targets
     {
         public float distance;
         public float velocity;
-        public float elevation;
-        public float azimuth;
+        public Vector3 velocity3D;
+        public Vector2 direction;
         public float timeStamp;
-
-        public TargetData(float distance, float velocity, float elevation, float azimuth)
-        {
-            this.distance = distance;
-            this.velocity = velocity;
-            this.elevation = elevation;
-            this.azimuth = azimuth;
-            this.timeStamp = Time.time;
-        }
 
         public TargetData(GameObject target)
         {
@@ -30,10 +21,10 @@ namespace Targets
                 return;
             }
             Rigidbody targetBody = target.GetComponent<Rigidbody>();
-            this.distance = Vector3.Distance(Vector3.zero, target.transform.position);
+            this.distance = target.transform.position.magnitude;
             this.velocity = targetBody.linearVelocity.magnitude;
-            this.elevation = 0;
-            this.azimuth = 0;
+            this.velocity3D = targetBody.linearVelocity;
+            this.direction = Vector2.zero;
             this.timeStamp = Time.time;
         }
 
@@ -44,16 +35,36 @@ namespace Targets
                 Debug.LogError("RadarBeam is null.");
                 return;
             }
-            this.elevation = beam.beamDirection.y;
-            this.azimuth = beam.beamDirection.x;
+            this.direction = beam.beamDirection;
         }
         public Vector3 GetPosition()
         {
             Vector3 position = Vector3.zero;
-            position.x = distance * Mathf.Cos(elevation) * Mathf.Cos(azimuth);
-            position.y = distance * Mathf.Sin(elevation);
-            position.z = distance * Mathf.Cos(elevation) * Mathf.Sin(azimuth);
+
+            float elevationRad = this.direction.x * Mathf.Deg2Rad;
+            float azimuthRad = this.direction.y * Mathf.Deg2Rad;
+
+            position.x = distance * Mathf.Cos(elevationRad) * Mathf.Cos(azimuthRad);
+            position.y = distance * Mathf.Sin(elevationRad);
+            position.z = distance * Mathf.Cos(elevationRad) * Mathf.Sin(azimuthRad);
             return position;
         }
+
+        public void SetPosition(Vector3 position)
+        {
+            if (position == null)
+            {
+                Debug.LogError("Position is null.");
+                return;
+            }
+            this.distance = position.magnitude;
+            this.direction = new Vector2(Mathf.Asin(position.y / position.magnitude), Mathf.Atan2(position.z, position.x)) * Mathf.Rad2Deg;
+        }
+
+        public override string ToString()
+        {
+            return $"TargetData: Distance={distance}, Velocity={velocity}, Direction={direction}, TimeStamp={timeStamp}";
+        }
+
     }
 }
