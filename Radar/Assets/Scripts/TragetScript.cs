@@ -1,45 +1,39 @@
-using Targets;
+using target;
+using Target;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class TragetScript : MonoBehaviour
 {
     [Header("Target Movement Settings")]
-    [SerializeField] float moveFactor = 1000f;
-    [SerializeField] float upDownFactor = 250f;
-    [SerializeField] float dampingFactor = 0.02f;
-    [SerializeField] float dampingFactorExponent = 0.01f;
+    [SerializeField] float accelerationFactor = 10f;
+    [SerializeField] float dragForceFactor = 20f;
+    [SerializeField] float pitchFactor = 50f;
+    [SerializeField] float yawFactor = 50f;
+    [SerializeField] float rollFactor = 50f;
 
     [SerializeField] RadarScript radarScript;
 
-    Rigidbody targetBody;
-
-    private Vector2 moveInput;
-    private float upDownInput;
+    private TargetController controller;
 
     private void Start()
     {
         radarScript = GameObject.FindFirstObjectByType<RadarScript>();
-        targetBody = GetComponent<Rigidbody>();
+
+        //controller = new DirectTargetController(this.gameObject);
+        controller = new IndirectTargetController(this.gameObject);
+        //controller = new AutoPilotController(this.gameObject);
     }
     private void Update()
-    {
-        if (radarScript == null)
-        {
-            Debug.LogError("RadarScript is not assigned.");
-            return;
-        }
+    { 
+        controller.accelerationFactor = accelerationFactor;
+        controller.dragForceFactor = dragForceFactor ;
+        controller.pitchFactor = pitchFactor ;
+        controller.yawFactor = yawFactor ;
     }
     private void FixedUpdate()
     {
-        if (radarScript == null)
-        {
-            Debug.LogError("RadarScript is not assigned.");
-            return;
-        }
-        Vector3 moveDirection = new Vector3(moveInput.x * moveFactor, upDownInput * upDownFactor, moveInput.y * moveFactor);
-        targetBody.AddForce(moveDirection * Time.fixedDeltaTime);
-        targetBody.linearVelocity -= dampingFactor * Mathf.Exp(dampingFactorExponent * targetBody.linearVelocity.magnitude) * targetBody.linearVelocity;
+        controller.Update();
     }
     private void OnTriggerStay(Collider other)
     {
@@ -50,24 +44,38 @@ public class TragetScript : MonoBehaviour
     {
         if (context.performed)
         {
-            moveInput = context.ReadValue<Vector2>().normalized;
+            controller.move = context.ReadValue<Vector2>();
         }
-        if (context.canceled)
+        else if (context.canceled)
         {
-            moveInput = Vector2.zero;
+            controller.move = Vector2.zero;
         }
-    }   
-
-    public void OnUpDown(InputAction.CallbackContext context)
+    }
+    public void OnYaw(InputAction.CallbackContext context)
     {
         if (context.performed)
         {
-            upDownInput = context.ReadValue<float>();
+            controller.yaw = context.ReadValue<float>();
         }
-        if (context.canceled)
+        else if (context.canceled)
         {
-            upDownInput = 0f;
+            controller.yaw = 0;
         }
     }
-
+    public void OnAOA(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            controller.AOA = context.ReadValue<float>();
+        }
+        else if (context.canceled)
+        {
+            controller.AOA = 0;
+        }
+    }
+    public void HideTarget(bool isHidden)
+    {
+        gameObject.GetComponentInChildren<MeshRenderer>().enabled = !isHidden;
+        gameObject.GetComponentInChildren<TrailRenderer>().enabled = !isHidden;
+    }
 }

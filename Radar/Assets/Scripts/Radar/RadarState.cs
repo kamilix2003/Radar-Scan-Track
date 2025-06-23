@@ -1,121 +1,100 @@
-﻿
-
-using System;
-using Targets;
-using Unity.VisualScripting.FullSerializer;
+﻿using Target;
 using UnityEngine;
 
 namespace RadarSystem
 {
     abstract class RadarState
     {
-        public TargetData trackedTarget { get; protected set; }
-        public string stateName { get; protected set; }
-        protected RadarState(string stateName = "BaseRadarState", TargetData trackedData = null)
+        public TargetData TrackedTarget { get; protected set; }
+        public string StateName { get; protected set; }
+        protected RadarState(string stateName = "Unknown Radar State", TargetData trackedData = null)
         {
-            this.stateName = stateName;
-            this.trackedTarget = trackedData;
+            this.StateName = stateName;
+            this.TrackedTarget = trackedData;
         }
-        public virtual RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target, float dt)
-        {
-            return this;
-        }
-        public virtual Color GetColor()
-        {
-            return Color.white; // Default color for the radar state
-        }
+        public abstract RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt);
+        public abstract Color GetColor();
         public override string ToString()
         {
-            return stateName;
+            return StateName;
         }
         protected void predictTargetPosition(TargetData target, float dt)
         {
-            Vector3 positionDelta = new Vector3(target.velocity3D.y, target.velocity3D.x, target.velocity3D.z) * dt;
-            Vector3 noise = Mathf.PerlinNoise(Time.time, 0.0f) * 0.1f * Vector3.one; // Adding some noise for realism
-            Vector3 newPosition = target.GetPosition() + positionDelta + noise;
+            Vector3 positionDelta = target.velocity3D * dt;
+            positionDelta.x = - positionDelta.x;
+            Vector3 newPosition = target.GetPosition() + positionDelta;
             target.SetPosition(newPosition);
         }
     }
     class TrackState : RadarState
     {
-        public TrackState(TargetData target) : base("TrackState", target)
-        {
-
-        }
+        public TrackState(TargetData target) : base("Tracking", target) { }
         public override RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt)
         {
             if (target == null)
             {
-                return new LostTrackState(trackedTarget); // Transition to lost track state if no target
+                return new LostTrackState(TrackedTarget);
             }
-            trackedTarget = target;
-            predictTargetPosition(trackedTarget, dt);
-            beam.beamDirection = trackedTarget.direction;
+            TrackedTarget = target;
+            predictTargetPosition(TrackedTarget, dt);
+            beam.Elevation = TrackedTarget.elevation;
+            beam.Azimuth = TrackedTarget.azimuth;
             return this;
         }
-
         public override Color GetColor()
         {
-            return Color.red; // Color for the track state
+            return Color.red;
         }
     }
 
     class LostTrackState : RadarState
     {
-        const float lostTrackTimeout = 2f; // Timeout for lost track state
-        public LostTrackState(TargetData targetData) : base("LostTrackState", targetData)
+        const float lostTrackTimeout = 2f;
+        public LostTrackState(TargetData targetData) : base("Lost Track", targetData) { }
+        public override RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt)
         {
-            
+            if (target != null)
+            {
+                return new TrackState(target);
+            }
+            if (Time.time - TrackedTarget.timeStamp > lostTrackTimeout)
+            {
+                Debug.Log("Lost track of target, transitioning to scan state.");
+                return new ScanState();
+            }
+            predictTargetPosition(TrackedTarget, dt);
+            beam.Elevation = TrackedTarget.elevation;
+            beam.Azimuth = TrackedTarget.azimuth;
+            return this;
+        }
+        public override Color GetColor()
+        {
+            return Color.blue;
+        }
+    }
+    class ScanState : RadarState
+    {
+        private ScanStrategy strategy;
+        public ScanState() : base("Scanning")
+        {
+            strategy = new HorizontalScan();
+        }
+        public ScanState(ScanStrategy strategy) : base("Scanning")
+        {
+            this.strategy = strategy;
         }
         public override RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt)
         {
             if (target != null)
             {
-                return new TrackState(target); // Transition to track state if target is found
-            }
-            if (Time.time - trackedTarget.timeStamp > lostTrackTimeout)
-            {
-                Debug.Log("Lost track of target, transitioning to scan state.");
-                return new ScanState(); // Transition to scan state if timeout exceeded
-            }
-            predictTargetPosition(trackedTarget, dt);
-            beam.beamDirection = trackedTarget.direction;
-            return this;
-        }
-
-        public override Color GetColor()
-        {
-            return Color.blue; // Color for the lost track state
-        }
-    }
-
-    class ScanState : RadarState
-    {
-        private ScanStrategy strategy;
-
-        public ScanState() : base("ScanState")
-        {
-            strategy = new HorizontalScan();
-        }
-        public ScanState(ScanStrategy strategy)
-        {
-            this.strategy = strategy;
-            stateName = "ScanState"; // Set the state name for scanning
-        }
-        public override RadarState UpdateBeam(RadarBeam beam, Targets.TargetData target, float dt)
-        {
-            if (target != null)
-            {
-                RadarState newState = new TrackState(target);
-                newState.UpdateBeam(beam, target, dt); // Update the beam with the target data
-                return newState;
+                return new TrackState(target);
             }
             strategy.NextBeamDirection(beam);
-            return this; // Continue scanning
+            return this;
         }
         public override Color GetColor()
         {
-            return Color.green; // Color for the scan state
+            return Color.green;
         }
     }
 }

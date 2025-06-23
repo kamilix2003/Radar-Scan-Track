@@ -10,48 +10,31 @@ namespace RadarSystem
         protected const float YAW_UPPER_LIMIT = 85f;
         protected const float YAW_LOWER_LIMIT = 5f;
 
-        public ScanStrategy()
-        {
-
-        }
+        public ScanStrategy() { }
 
         public abstract void NextBeamDirection(RadarBeam beam);
     }
-
-    class PolarScan : ScanStrategy
-    {
-
-        public PolarScan() : base() { }
-
-        public override void NextBeamDirection(RadarBeam beam)
-        {
-            throw new NotImplementedException();
-        }
-
-    }
-
     class HorizontalScan : ScanStrategy
     {
         public HorizontalScan() : base() { }
-
         public override void NextBeamDirection(RadarBeam beam)
         {
-            Vector2 nextDirection = beam.beamDirection;
-            nextDirection.x += beam.beamWidth;
+            Vector2 nextDirection = new Vector2(beam.Azimuth, beam.Elevation);
+            nextDirection.x += beam.BeamWidth;
 
             if (nextDirection.x > 360)
             {
                 nextDirection.x = 0;
-                nextDirection.y += beam.beamWidth;
+                nextDirection.y += beam.BeamWidth;
             }
             if (nextDirection.y > YAW_UPPER_LIMIT || nextDirection.y < YAW_LOWER_LIMIT)
             {
                 nextDirection.y = YAW_LOWER_LIMIT;
             }
 
-            beam.beamDirection = nextDirection;
+            beam.Elevation = nextDirection.y;
+            beam.Azimuth = nextDirection.x;
         }
-        
     }
 
     class VerticalScan : ScanStrategy
@@ -60,12 +43,21 @@ namespace RadarSystem
         {
 
         }
-
         public override void NextBeamDirection(RadarBeam beam)
         {
-
+            Vector2 nextDirection = new Vector2(beam.Elevation, beam.Azimuth);
+            nextDirection.x += beam.BeamWidth;
+            if (nextDirection.x > 360)
+            {
+                nextDirection.x = 0;
+                nextDirection.y += beam.BeamWidth;
+            }
+            if (nextDirection.y > YAW_UPPER_LIMIT || nextDirection.y < YAW_LOWER_LIMIT)
+            {
+                nextDirection.y = YAW_LOWER_LIMIT;
+            }
+            beam.Elevation = nextDirection.y;
+            beam.Azimuth = nextDirection.x;
         }
-
     }
-
 }

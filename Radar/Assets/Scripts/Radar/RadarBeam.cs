@@ -1,45 +1,56 @@
-using System;
-using NUnit.Framework;
-using UnityEngine;
 
 namespace RadarSystem
 {
     public abstract class RadarBeam
     {
-        public float beamWidth { private set; get; }          // Beam width in degrees
-        public float beamRange { private set; get; }
-        public Vector2 beamDirection { set; get; }    // Beam direction in (azimuth, elevation)
-
+        public string BeamName { get; protected set; } = "Generic Beam";
+        public float BeamWidth { private set; get; }
+        public float BeamRange { private set; get; }
+        public float Elevation { set; get; }
+        public float Azimuth { set; get; }
         public RadarBeam(float width, float range)
         {
-            beamWidth = width;
-            beamRange = range;
-            beamDirection = Vector2.zero; // Default direction
+            BeamWidth = width;
+            BeamRange = range;
+            Elevation = 0f;
+            Azimuth = 0f;
         }
-
+        public RadarBeam(float width, float range, RadarBeam oldBeam)
+        {
+            BeamWidth = width;
+            BeamRange = range;
+            Elevation = oldBeam.Elevation;
+            Azimuth = oldBeam.Azimuth;
+        }
+        public override string ToString()
+        {
+            return BeamName;
+        }
     }
-
     class NarrowBeam : RadarBeam
     {
-
-        [SerializeField] const float narrowBeamWidth = 5f;
-        [SerializeField] const float narrowBeamRange = 100f;
-
+        const float narrowBeamWidth = 10f;
+        const float narrowBeamRange = 100f;
         public NarrowBeam() : base(narrowBeamWidth, narrowBeamRange)
         {
-
+            BeamName = "Narrow Beam";
+        }
+        public NarrowBeam(RadarBeam oldBeam) : base(narrowBeamWidth, narrowBeamRange, oldBeam)
+        {
+            BeamName = "Narrow Beam";
         }
     }
-
     class WideBeam : RadarBeam
     {
-
-        [SerializeField] const float wideBeamWidth = 20f;
-        [SerializeField] const float wideBeamRange = 50f;
-
+        const float wideBeamWidth = 20f;
+        const float wideBeamRange = 50f;
         public WideBeam() : base(wideBeamWidth, wideBeamRange)
         {
+            BeamName = "Wide Beam";
+        }
+        public WideBeam(RadarBeam oldBeam) : base(wideBeamWidth, wideBeamRange, oldBeam)
+        {
+            BeamName = "Wide Beam";
         }
     }
-
 }

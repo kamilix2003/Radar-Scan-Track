@@ -1,19 +1,27 @@
 using RadarSystem;
-using Targets;
+using Target;
 using UnityEngine;
 
 class RadarScript : MonoBehaviour
 {
-    Radar radar = new Radar();
-    [SerializeField] float radarUpdateInterval = 0.1f;
-    [SerializeField] float beamUpdateInterval = 0.5f;
+    [SerializeField] UIManager uiManager;
+
+    public Radar radar = new Radar();
     [SerializeField] BeamManager beamManager;
+    public float radarUpdateInterval = 0.1f;
+
+
+    public TargetTracer targetTracer;
+    public GameObject dotPreFab;
+    public GameObject lineObject;
+
     public TargetData targetData;
 
     void Start()
     {
+        uiManager.radar = radar;
+        targetTracer = new TargetTracer(dotPreFab, lineObject);
         InvokeRepeating("UpdateRadar", 0f, radarUpdateInterval);
-        InvokeRepeating("UpdateBeam", 0f, radarUpdateInterval);
     }
     void UpdateRadar()
     {
@@ -21,32 +29,17 @@ class RadarScript : MonoBehaviour
         {
             targetData = null;
         }
+        uiManager.trackedTargetData = radar.State.TrackedTarget;
 
         radar.Process(targetData, radarUpdateInterval);
-        if(radar.state.trackedTarget != null)
-        {
-            Vector3 estimatedPosition = radar.state.trackedTarget.GetPosition();
-            Debug.Log($"Estimated Position: {estimatedPosition}");
-        }
+
+        beamManager.UpdateBeam(radar.Beam);
+        beamManager.DetectionState(radar.State);
+
+        targetTracer.Trace(radar.State.TrackedTarget, radar.State);
 
         CancelInvoke("UpdateRadar");
         InvokeRepeating("UpdateRadar", radarUpdateInterval, radarUpdateInterval);
     }
-    void UpdateBeam()
-    {
-        Vector2 beamDir = radar.beam.beamDirection;
-        //Debug.Log($"Beam direction: {beamDir}");
-
-        if (beamManager == null)
-        {
-            Debug.LogError("BeamManager is not assigned.");
-            return;
-        }
-
-        beamManager.UpdateBeam(radar.beam);
-        beamManager.DetectionState(radar.state);
-
-        CancelInvoke("UpdateBeam");
-        InvokeRepeating("UpdateBeam", beamUpdateInterval, beamUpdateInterval);
-    }
+    
 }

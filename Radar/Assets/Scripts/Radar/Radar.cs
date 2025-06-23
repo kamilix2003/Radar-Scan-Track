@@ -1,35 +1,23 @@
-using System;
-using NUnit.Framework;
-using Targets;
-using Unity.VisualScripting;
-using UnityEngine;
+using Target;
 
 namespace RadarSystem
 { 
     class Radar 
     {
-        public RadarBeam beam { get; private set; }
-
-        public RadarState state { get; private set; }
-
-        //private List<TargetSample> targetHistory;
-
+        public RadarBeam Beam { get; set; }
+        public RadarState State { get; set; }
         public Radar()
         {
-            beam = new WideBeam();
-            state = new ScanState();
+            Beam = new WideBeam();
+            State = new ScanState();
         }
-
-
         public void Process(TargetData targetData, float dt)
         {
             if (targetData != null)
             {
-                targetData.PopulateAngles(beam);
+                targetData.PopulateAngles(Beam);
             }
-            state = state.UpdateBeam(beam, targetData, dt);
+            State = State.UpdateBeam(Beam, targetData, dt);
         }
-
     }
-
 }

@@ -3,6 +3,7 @@
 using RadarSystem;
 using UnityEngine;
 using UnityEngine.Rendering;
+using NUnit.Framework;
 
 class BeamManager : MonoBehaviour
 {
@@ -10,10 +11,11 @@ class BeamManager : MonoBehaviour
     public int beamSegments = 20;
 
     [SerializeField] GameObject radarObject;
+    [SerializeField] GameObject radarModel;
 
     [Header("Beam Settings")]
     [SerializeField] Material beamMaterial;
-    [SerializeField] float beamAlpha = 0.2f;
+    [SerializeField] float beamAlpha = 0.1f;
 
     public GameObject beamObject;
     private RadarBeam localRadarBeam;
@@ -36,7 +38,7 @@ class BeamManager : MonoBehaviour
 
         beamObject.transform.SetParent(radarObject.transform);
         beamObject.transform.localPosition = Vector3.zero;
-        beamObject.transform.localRotation = Quaternion.identity;
+        beamObject.transform.localRotation = Quaternion.Euler(0, 0, 0);
 
         MeshFilter meshFilter = beamObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = beamObject.AddComponent<MeshRenderer>();
@@ -61,15 +63,16 @@ class BeamManager : MonoBehaviour
             beamObject.GetComponent<MeshCollider>().sharedMesh = beamMesh;
         }
 
-        beamObject.transform.localRotation = Quaternion.Euler(beam.beamDirection.y, beam.beamDirection.x, 0);
+        beamObject.transform.rotation = Quaternion.Euler(0, beam.Azimuth, 90 - beam.Elevation);
+        radarModel.transform.rotation = Quaternion.Euler(0, beam.Azimuth - 90, 0);
     }
     private Mesh GenerateBeamMesh(RadarBeam beam, int segments)
     {
         Mesh mesh = new Mesh();
         mesh.name = "Procedural Cone";
 
-        float halfBeamWidth = beam.beamWidth / 2;
-        float height = beam.beamRange;
+        float halfBeamWidth = beam.BeamWidth / 2;
+        float height = beam.BeamRange;
         float radius = Mathf.Tan(halfBeamWidth * Mathf.Deg2Rad) * height;
 
         // Vertices
@@ -136,4 +139,5 @@ class BeamManager : MonoBehaviour
 
         return mesh;
     }
+
 }
