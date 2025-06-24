@@ -4,6 +4,7 @@
 
 ## UML
 
+<<<<<<< HEAD
 ![UML alt text](img/Radar_UML.drawio.svg)
 
 ## Used assests
