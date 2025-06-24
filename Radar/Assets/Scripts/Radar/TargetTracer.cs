@@ -12,7 +12,6 @@ class TargetTracer
         this.dotPreFab = dotPreFab;
         LineObject = lineObject;
     }
-
     public void Trace(TargetData target, RadarState state)
     {
         if (target == null || state == null)
@@ -27,7 +26,6 @@ class TargetTracer
         newObject.GetComponent<MeshRenderer>().material.color = stateColor;
         newObject.transform.SetParent(LineObject.transform);
     }
-
     public void Clear()
     {
         foreach (Transform child in LineObject.transform)
@@ -35,7 +33,6 @@ class TargetTracer
             Object.Destroy(child.gameObject);
         }
     }
-
     public void ChangeVisibility(bool visible)
     {
         LineObject.SetActive(visible);

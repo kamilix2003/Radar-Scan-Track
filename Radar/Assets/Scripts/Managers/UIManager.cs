@@ -1,32 +1,16 @@
 using RadarSystem;
 using Target;
 using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 
 class UIManager : MonoBehaviour
 {
     [Header("Real Target Data")]
-    [SerializeField] GameObject targetObject;
-    public TargetData trackedTargetData;
-
-    [Header("Radar Data")]
-    public RadarSystem.Radar radar;
-
-    //[Header("UI Elements")]
-    [Header("Real Target Data")]
-    [SerializeField] TextMeshProUGUI realVelocity;
-    [SerializeField] TextMeshProUGUI realDistance;
-    [SerializeField] TextMeshProUGUI realElevation;
-    [SerializeField] TextMeshProUGUI realAzimuth;
+    [SerializeField]GameObject realTargetDataPanel;
 
     [Header("Estimated Target Data")]
-    [SerializeField] TextMeshProUGUI estimatedVelocity;
-    [SerializeField] TextMeshProUGUI estimatedDistance;
-    [SerializeField] TextMeshProUGUI estimatedElevation;
-    [SerializeField] TextMeshProUGUI estimatedAzimuth;
+    [SerializeField]GameObject estimatedTargetDataPanel;
 
     [Header("Radar UI")]
     [SerializeField] TextMeshProUGUI radarStatus;
@@ -49,33 +33,45 @@ class UIManager : MonoBehaviour
     }
     private void UpdateReal()
     {
-        TargetData targetData = new TargetData(targetObject);
-        targetData.PopulateAngles(targetObject.transform.position);
-        realVelocity.text = "Velocity: " + targetData.velocity3D.magnitude.ToString("F1") + " m/s";
-        realDistance.text = "Distance: " + targetData.distance.ToString("F1") + " m";
-        realElevation.text = "Elevation: " + targetData.elevation.ToString("F1") + "°";
-        realAzimuth.text = "Azimuth: " + targetData.azimuth.ToString("F1") + "°";
+        TargetData targetData = new TargetData(targetScript.gameObject);
+        targetData.PopulateAngles(targetScript.gameObject.transform.position);
+        realTargetDataPanel.transform.Find("velocity").GetComponent<TextMeshProUGUI>().text = "Velocity: " + targetData.velocity3D.magnitude.ToString("F1") + " m/s";
+        realTargetDataPanel.transform.Find("distance").GetComponent<TextMeshProUGUI>().text = "Distance: " + targetData.distance.ToString("F1") + " m";
+        Transform positionObject = realTargetDataPanel.transform.Find("position");
+        positionObject.Find("x").GetComponent<TextMeshProUGUI>().text = "X\n" + targetData.GetPosition().x.ToString("F1") + " m";
+        positionObject.Find("y").GetComponent<TextMeshProUGUI>().text = "Y\n" + targetData.GetPosition().y.ToString("F1") + " m";
+        positionObject.Find("z").GetComponent<TextMeshProUGUI>().text = "Z\n" + targetData.GetPosition().z.ToString("F1") + " m";
+        //realElevation.text = "Elevation: " + targetData.elevation.ToString("F1") + "°";
+        //realAzimuth.text = "Azimuth: " + targetData.azimuth.ToString("F1") + "°";
     }
     private void UpdateEstimated()
     {
+        Transform positionObject = estimatedTargetDataPanel.transform.Find("position");
+        TargetData trackedTargetData = radarScript.radar.State.TrackedTarget;
         if (trackedTargetData == null)
         {
-            estimatedVelocity.text = "Velocity: N/A";
-            estimatedDistance.text = "Distance: N/A";
-            estimatedElevation.text = "Elevation: N/A";
-            estimatedAzimuth.text = "Azimuth: N/A";
+            estimatedTargetDataPanel.transform.Find("velocity").GetComponent<TextMeshProUGUI>().text = "Velocity: N/A";
+            estimatedTargetDataPanel.transform.Find("distance").GetComponent<TextMeshProUGUI>().text = "Distance: N/A";
+            //estimatedElevation.text = "Elevation: N/A";
+            //estimatedAzimuth.text = "Azimuth: N/A";
+            positionObject.Find("x").GetComponent<TextMeshProUGUI>().text = "X\n" + "N/A";
+            positionObject.Find("y").GetComponent<TextMeshProUGUI>().text = "Y\n" + "N/A";
+            positionObject.Find("z").GetComponent<TextMeshProUGUI>().text = "Z\n" + "N/A";
             return;
         }
-        estimatedVelocity.text = "Velocity: " + trackedTargetData.velocity3D.magnitude.ToString("F1") + " m/s";
-        estimatedDistance.text = "Distance: " + trackedTargetData.distance.ToString("F1") + " m";
-        estimatedElevation.text = "Elevation: " + trackedTargetData.elevation.ToString("F1") + "°";
-        estimatedAzimuth.text = "Azimuth: " + trackedTargetData.azimuth.ToString("F1") + "°";
+        estimatedTargetDataPanel.transform.Find("velocity").GetComponent<TextMeshProUGUI>().text = "Velocity: " + trackedTargetData.velocity3D.magnitude.ToString("F1") + " m/s";
+        estimatedTargetDataPanel.transform.Find("distance").GetComponent<TextMeshProUGUI>().text = "Distance: " + trackedTargetData.distance.ToString("F1") + " m";
+        //estimatedElevation.text = "Elevation: " + trackedTargetData.elevation.ToString("F1") + "°";
+        //estimatedAzimuth.text = "Azimuth: " + trackedTargetData.azimuth.ToString("F1") + "°";
+        positionObject.Find("x").GetComponent<TextMeshProUGUI>().text = "X\n" + (-trackedTargetData.GetPosition().x).ToString("F1") + " m";
+        positionObject.Find("y").GetComponent<TextMeshProUGUI>().text = "Y\n" + trackedTargetData.GetPosition().y.ToString("F1") + " m";
+        positionObject.Find("z").GetComponent<TextMeshProUGUI>().text = "Z\n" + trackedTargetData.GetPosition().z.ToString("F1") + " m";
     }
     private void UpdateRadarUI()
     {
-        radarStatus.text = radar.State.ToString();
-        radarStatus.color = radar.State.GetColor();
-        radarBeam.text = radar.Beam.ToString();
+        radarStatus.text = radarScript.radar.State.ToString();
+        radarStatus.color = radarScript.radar.State.GetColor();
+        radarBeam.text = radarScript.radar.Beam.ToString();
     }
     public void OnTargetTraceToggle(bool traceEnable)
     {
@@ -112,8 +108,6 @@ class UIManager : MonoBehaviour
         if (radarScript.radar.State.StateName != "Searching")
         {
             radarScript.radar.State = new RadarSystem.ScanState();
-            radarScript.radar.Beam.Elevation = 90f; // Reset elevation to 90 degrees
-            radarScript.radar.Beam.Azimuth = 0f; // Reset azimuth to 0 degrees
         }
     }
     public void OnBeam()

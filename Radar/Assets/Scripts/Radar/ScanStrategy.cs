@@ -10,13 +10,11 @@ namespace RadarSystem
         protected const float YAW_UPPER_LIMIT = 85f;
         protected const float YAW_LOWER_LIMIT = 5f;
 
-        public ScanStrategy() { }
-
         public abstract void NextBeamDirection(RadarBeam beam);
     }
     class HorizontalScan : ScanStrategy
     {
-        public HorizontalScan() : base() { }
+        public HorizontalScan() { }
         public override void NextBeamDirection(RadarBeam beam)
         {
             Vector2 nextDirection = new Vector2(beam.Azimuth, beam.Elevation);
@@ -39,10 +37,7 @@ namespace RadarSystem
 
     class VerticalScan : ScanStrategy
     {
-        public VerticalScan() : base()
-        {
-
-        }
+        public VerticalScan() { }
         public override void NextBeamDirection(RadarBeam beam)
         {
             Vector2 nextDirection = new Vector2(beam.Elevation, beam.Azimuth);

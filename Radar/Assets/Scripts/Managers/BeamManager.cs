@@ -7,7 +7,6 @@ using NUnit.Framework;
 
 class BeamManager : MonoBehaviour
 {
-
     public int beamSegments = 20;
 
     [SerializeField] GameObject radarObject;
@@ -19,12 +18,10 @@ class BeamManager : MonoBehaviour
 
     public GameObject beamObject;
     private RadarBeam localRadarBeam;
-
     public void Start()
     {
         beamObject = CreateBeam(radarObject, new WideBeam());
     }
-
     public void DetectionState(RadarState state)
     {
         Color beamColor = state.GetColor();

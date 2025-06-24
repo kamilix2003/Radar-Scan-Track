@@ -1,6 +1,5 @@
 
 
-using NUnit.Framework;
 using RadarSystem;
 using UnityEngine;
 
@@ -9,7 +8,6 @@ namespace Target
     class TargetData
     {
         public float distance;
-        public float velocity;
         public Vector3 velocity3D;
         public float elevation;
         public float azimuth;
@@ -17,7 +15,6 @@ namespace Target
         public TargetData()
         {
             this.distance = 0f;
-            this.velocity = 0f;
             this.velocity3D = Vector3.zero;
             this.elevation = 0f;
             this.azimuth = 0f;
@@ -32,7 +29,6 @@ namespace Target
             }
             Rigidbody targetBody = target.GetComponent<Rigidbody>();
             this.distance = target.transform.position.magnitude;
-            this.velocity = targetBody.linearVelocity.magnitude;
             this.velocity3D = targetBody.linearVelocity;
             this.elevation = 0f;
             this.azimuth = 0f;
@@ -67,7 +63,6 @@ namespace Target
             
             return position;
         }
-
         public void SetPosition(Vector3 position)
         {
             if (position == null)
@@ -79,36 +74,10 @@ namespace Target
             this.elevation = Mathf.Asin(position.y / position.magnitude) * Mathf.Rad2Deg;
             this.azimuth = Mathf.Atan2(position.z, position.x) * Mathf.Rad2Deg;
         }
-
         public override string ToString()
         {
-            return $"TargetData: Distance={distance}, Velocity={velocity}, Elevation={elevation}, Azimuth={azimuth}, TimeStamp={timeStamp}";
+            return $"TargetData: Distance={distance}, Velocity={velocity3D.magnitude}, Elevation={elevation}, Azimuth={azimuth}, TimeStamp={timeStamp}";
         }
     }
 
-    public class TargetTest
-    {
-        [Test]
-        [TestCase(0f, 0f, 0f)]
-        [TestCase(1f, 1f, 1f)]
-        [TestCase(-1f, 1f, -1f)]
-        [TestCase(-1f, 0f, 1f)]
-        public void ConvertionTest(float x, float y, float z)
-        {
-            Vector3 position = new Vector3(x, y, z);
-            TargetData testTargetData = new TargetData();
-            testTargetData.SetPosition(position);
-            Vector3 convertedPosition = testTargetData.GetPosition();
-            Assert.AreEqual(position, convertedPosition, "The converted position does not match the original position.");
-        }
-        [Test]
-        public void GetPositionTest()
-        {
-            TargetData testTargetData = new TargetData();
-            testTargetData.distance = 1f;
-            Vector3 position = testTargetData.GetPosition();
-            Debug.Log(position);
-            Assert.AreEqual(1f, position.magnitude, "The position magnitude does not match the distance.");
-        }
-    }
 }

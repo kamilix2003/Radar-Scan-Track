@@ -12,15 +12,15 @@ namespace target
         public float yaw;
         public float AOA;
 
-        public float maxSpeed = 10f; // Maximum speed of the target
-        public float minSpeed = 2f; // Minimum speed of the target
+        protected const float maxSpeed = 10f; // Maximum speed of the target
+        protected const float minSpeed = 2f; // Minimum speed of the target
 
-        public float maxElevation = 45f; // Maximum elevation angle
+        protected const float maxElevation = 45f; // Maximum elevation angle
         
-        public float accelerationFactor = 10f;
-        public float dragForceFactor = 20f;
-        public float pitchFactor = 50f;
-        public float yawFactor = 50f;
+        protected const float accelerationFactor = 10f;
+        protected const float dragForceFactor = 20f;
+        protected const float pitchFactor = 50f;
+        protected const float yawFactor = 50f;
 
         public TargetController(GameObject target)
         {

@@ -5,20 +5,15 @@ public class CameraManager : MonoBehaviour
     [SerializeField] Camera mainCamera;
     [SerializeField] Camera secondaryCamera;
 
-    [SerializeField] GameObject targetObject;
-    void Start()
-    {
-        
-    }
-
+    [SerializeField] TragetScript targetScript;
     void Update()
     {
-        float distance = Vector3.Distance(mainCamera.transform.position, targetObject.transform.position);
-        mainCamera.orthographicSize = 3 + Mathf.Clamp(distance, 10f, 30f);
+        float distance = Vector3.Distance(mainCamera.transform.position, targetScript.gameObject.transform.position);
+        mainCamera.orthographicSize = 3 + 0.7f * Mathf.Clamp(distance, 10f, 30f);
 
-        if (targetObject.transform.position.magnitude > 75f)
+        if (targetScript.gameObject.transform.position.magnitude > 75f)
         {
-            targetObject.transform.position = Vector3.zero + 10f * Vector3.up;
+            targetScript.gameObject.transform.position = Vector3.zero + 10f * Vector3.up;
         }
     }
 }

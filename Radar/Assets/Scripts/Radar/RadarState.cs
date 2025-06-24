@@ -7,13 +7,18 @@ namespace RadarSystem
     {
         public TargetData TrackedTarget { get; protected set; }
         public string StateName { get; protected set; }
-        protected RadarState(string stateName = "Unknown Radar State", TargetData trackedData = null)
+        protected Color stateColor;
+        protected RadarState(Color stateColor, string stateName = "Unknown Radar State", TargetData trackedData = null)
         {
+            this.stateColor = stateColor;
             this.StateName = stateName;
             this.TrackedTarget = trackedData;
         }
         public abstract RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt);
-        public abstract Color GetColor();
+        public Color GetColor()
+        {
+            return stateColor;
+        }
         public override string ToString()
         {
             return StateName;
@@ -28,7 +33,7 @@ namespace RadarSystem
     }
     class TrackState : RadarState
     {
-        public TrackState(TargetData target) : base("Tracking", target) { }
+        public TrackState(TargetData target) : base(Color.red, "Tracking", target) { }
         public override RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt)
         {
             if (target == null)
@@ -41,16 +46,12 @@ namespace RadarSystem
             beam.Azimuth = TrackedTarget.azimuth;
             return this;
         }
-        public override Color GetColor()
-        {
-            return Color.red;
-        }
     }
 
     class LostTrackState : RadarState
     {
         const float lostTrackTimeout = 2f;
-        public LostTrackState(TargetData targetData) : base("Lost Track", targetData) { }
+        public LostTrackState(TargetData targetData) : base(Color.blue, "Lost Track", targetData) { }
         public override RadarState UpdateBeam(RadarBeam beam, TargetData target, float dt)
         {
             if (target != null)
@@ -67,19 +68,15 @@ namespace RadarSystem
             beam.Azimuth = TrackedTarget.azimuth;
             return this;
         }
-        public override Color GetColor()
-        {
-            return Color.blue;
-        }
     }
     class ScanState : RadarState
     {
         private ScanStrategy strategy;
-        public ScanState() : base("Scanning")
+        public ScanState() : base(Color.green, "Scanning")
         {
             strategy = new HorizontalScan();
         }
-        public ScanState(ScanStrategy strategy) : base("Scanning")
+        public ScanState(ScanStrategy strategy) : base(Color.green, "Scanning")
         {
             this.strategy = strategy;
         }
@@ -91,10 +88,6 @@ namespace RadarSystem
             }
             strategy.NextBeamDirection(beam);
             return this;
-        }
-        public override Color GetColor()
-        {
-            return Color.green;
         }
     }
 }

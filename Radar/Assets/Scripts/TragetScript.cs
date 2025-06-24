@@ -5,13 +5,6 @@ using UnityEngine.InputSystem;
 
 public class TragetScript : MonoBehaviour
 {
-    [Header("Target Movement Settings")]
-    [SerializeField] float accelerationFactor = 10f;
-    [SerializeField] float dragForceFactor = 20f;
-    [SerializeField] float pitchFactor = 50f;
-    [SerializeField] float yawFactor = 50f;
-    [SerializeField] float rollFactor = 50f;
-
     [SerializeField] RadarScript radarScript;
 
     private TargetController controller;
@@ -23,13 +16,6 @@ public class TragetScript : MonoBehaviour
         //controller = new DirectTargetController(this.gameObject);
         controller = new IndirectTargetController(this.gameObject);
         //controller = new AutoPilotController(this.gameObject);
-    }
-    private void Update()
-    { 
-        controller.accelerationFactor = accelerationFactor;
-        controller.dragForceFactor = dragForceFactor ;
-        controller.pitchFactor = pitchFactor ;
-        controller.yawFactor = yawFactor ;
     }
     private void FixedUpdate()
     {
